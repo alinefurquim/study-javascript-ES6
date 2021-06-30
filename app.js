@@ -29,14 +29,13 @@ class Bd {
 
     getProximoId() {
         let proximoId = localStorage.getItem('id')
-
-            return parseInt(proximoId) + 1
+        return parseInt(proximoId) + 1
     }
 
-    gravar(d) {
+    gravar(despesa) {
         let id = this.getProximoId()
 
-        localStorage.setItem(id, JSON.stringify(d))
+        localStorage.setItem(id, JSON.stringify(despesa))
 
         localStorage.setItem('id', id)
     }
@@ -51,6 +50,7 @@ class Bd {
             if(despesa === null) {
                 continue
             }
+            despesa.id = i
             despesas.push(despesa)
         }
         return despesas
@@ -59,28 +59,33 @@ class Bd {
     pesquisar(despesa) {
         let despesasFiltradas = Array()
 
-            despesasFiltradas = this.recuperarTodosRegistros()
+        despesasFiltradas = this.recuperarTodosRegistros()
 
-            if(despesa.ano != '') {
+        if(despesa.ano != '') {
+        despesasFiltradas = despesasFiltradas.filter(d => d.ano == despesa.ano)
+        }
+        if(despesa.mes != '') {
+            despesasFiltradas = despesasFiltradas.filter(d => d.mes == despesa.mes)
+        }
+        if(despesa.ano != '') {
             despesasFiltradas = despesasFiltradas.filter(d => d.ano == despesa.ano)
-            }
-            if(despesa.mes != '') {
-                despesasFiltradas = despesasFiltradas.filter(d => d.mes == despesa.mes)
-            }
-            if(despesa.ano != '') {
-                despesasFiltradas = despesasFiltradas.filter(d => d.ano == despesa.ano)
-            }
-            if(despesa.tipo != '') {
-                despesasFiltradas = despesasFiltradas.filter(d => d.tipo == despesa.tipo)
-            }
-            if(despesa.descricao != '') {
-                despesasFiltradas = despesasFiltradas.filter(d => d.descricao == despesa.descricao)
-            }
-            if(despesa.valor != '') {
-                despesasFiltradas = despesasFiltradas.filter(d => d.valor == despesa.valor)
-            }
+        }
+        if(despesa.tipo != '') {
+            despesasFiltradas = despesasFiltradas.filter(d => d.tipo == despesa.tipo)
+        }
+        if(despesa.descricao != '') {
+            despesasFiltradas = despesasFiltradas.filter(d => d.descricao == despesa.descricao)
+        }
+        if(despesa.valor != '') {
+            despesasFiltradas = despesasFiltradas.filter(d => d.valor == despesa.valor)
+        }
 
-            return despesasFiltradas
+        return despesasFiltradas
+    }
+
+    remover(id) {
+        console.log(id)
+        localStorage.removeItem(id)
     }
 }
 
@@ -103,33 +108,34 @@ function cadastrarDespesa() {
         descricao.value, 
         valor.value
     )
-        if(despesa.validarDados()) {
-            bd.gravar(despesa)
 
-            document.getElementById('modal_titulo').innerHTML = 'Registro inserido com sucesso'
-            document.getElementById('modal_titulo_div').className = 'modal-header text-succes'
-            document.getElementById('modal_conteudo').innerHTML = 'Despesa foi cadastrada com sucesso'
-            document.getElementById('modal_btn').innerHTML = 'Voltar'
-            document.getElementById('modal_btn').className = 'btn btn-success'
+    if(despesa.validarDados()) {
+        bd.gravar(despesa)
 
-            $('#modalRegistraDespesa').modal('show')
+        document.getElementById('modal_titulo').innerHTML = 'Registro inserido com sucesso'
+        document.getElementById('modal_titulo_div').className = 'modal-header text-succes'
+        document.getElementById('modal_conteudo').innerHTML = 'Despesa foi cadastrada com sucesso'
+        document.getElementById('modal_btn').innerHTML = 'Voltar'
+        document.getElementById('modal_btn').className = 'btn btn-success'
 
-            ano.value = ''
-            mes.value = ''
-            dia.value = ''
-            tipo.value = ''
-            descricao.value = ''
-            valor.value = ''
+        $('#modalRegistraDespesa').modal('show')
 
-        } else {
-            document.getElementById('modal_titulo').innerHTML = 'Erro na inclusão de registro'
-            document.getElementById('modal_titulo_div').className = 'modal-header text-danger'
-            document.getElementById('modal_conteudo').innerHTML = 'Erro na gravação'
-            document.getElementById('modal_btn').innerHTML = 'Voltar e corrigir'
-            document.getElementById('modal_btn').className = 'btn btn-danger'
+        ano.value = ''
+        mes.value = ''
+        dia.value = ''
+        tipo.value = ''
+        descricao.value = ''
+        valor.value = ''
 
-            $('#modalRegistraDespesa').modal('show')
-        }
+    } else {
+        document.getElementById('modal_titulo').innerHTML = 'Erro na inclusão de registro'
+        document.getElementById('modal_titulo_div').className = 'modal-header text-danger'
+        document.getElementById('modal_conteudo').innerHTML = 'Erro na gravação'
+        document.getElementById('modal_btn').innerHTML = 'Voltar e corrigir'
+        document.getElementById('modal_btn').className = 'btn btn-danger'
+
+        $('#modalRegistraDespesa').modal('show')
+    }
 }
 
 function carregaListaDespesas(despesas = Array(), filtro = false) {
@@ -162,6 +168,17 @@ function carregaListaDespesas(despesas = Array(), filtro = false) {
         linha.insertCell(1).innerHTML = d.tipo
         linha.insertCell(2).innerHTML = d.descricao
         linha.insertCell(3).innerHTML = d.valor
+
+        let btn = document.createElement('button')
+        btn.className = 'btn btn-danger'
+        btn.innerHTML = '<i class="fas fa-times"></i>'
+        btn.id = `id_despesa_${d.id}`
+        btn.onclick = function() {
+            let id = this.id.replace('id_despesa_', '')
+            bd.remover(id)
+            window.location.reload()
+        }
+        linha.insertCell(4).append(btn)
     })
 }
 
